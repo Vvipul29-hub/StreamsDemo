@@ -1,6 +1,7 @@
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class StreamsExamples {
 
@@ -36,9 +37,34 @@ public class StreamsExamples {
                 .max(Comparator.comparingInt(Student::getMarks));
     }
 
-    public static void getAverageMarks(List<Student> student) {
-        student.stream()
-                .
+    public static double getAverageMarks(List<Student> student) {
+        return student.stream()
+                .mapToInt(Student::getMarks)
+                .average()
+                .orElse(0.0);
+    }
+
+    public static void sortStudentsByMarksDesc(List<Student> students) {
+        students.stream()
+                .sorted(Comparator.comparingInt(Student::getMarks).reversed())
+                .forEach(s->System.out.println(s.getName()));
+    }
+
+    public static void groupStudentsByDept(List<Student> students) {
+        students.stream()
+                .collect(Collectors.groupingBy(Student::getDepartment))
+                .forEach((dept, studentList) -> {
+                    System.out.println("Department: "+dept);
+                    studentList.forEach(s -> System.out.println(s.getName()));
+                });
+    }
+
+    public static void countStudentsInEachDept(List<Student> students) {
+        students.stream()
+                .collect(Collectors.groupingBy(Student::getDepartment, Collectors.counting()))
+                .forEach((dept, count) -> {
+                    System.out.println("Department: "+dept+", Count: "+count);
+                });
     }
 
     public static void main(String[] args) {
@@ -51,12 +77,12 @@ public class StreamsExamples {
                 new Student(106, "Frank", "CSE", 55, 24),
                 new Student(107, "Grace", "ME", 78, 22)
         );
-        int limit = 80;
+        int scoredMoreThanLimit = 80;
         String dept = "CSE";
         System.out.println("Student Names:");
         getNames(students);
-        System.out.println("\nStudents who scored more than "+limit+":");
-        getStudentsScoredMoreThan(students, limit);
+        System.out.println("\nStudents who scored more than "+scoredMoreThanLimit+":");
+        getStudentsScoredMoreThan(students, scoredMoreThanLimit);
         System.out.println("\nTotal count of students: "+getStudentCount(students));
         System.out.println("\nStudents names in uppercase: ");
         namesToUpperCase(students);
@@ -65,5 +91,12 @@ public class StreamsExamples {
         System.out.println("\nStudent with the highest mark: ");
         getStudentWithHighestMarks(students)
                 .ifPresent(s->System.out.println(s.getName()+" - "+s.getMarks()));
+        System.out.println("\nAverage marks of all students: "+getAverageMarks(students));
+        System.out.println("\nSorted list of students by marks in descending order:");
+        sortStudentsByMarksDesc(students);
+        System.out.println("\nGrouping students by department:");
+        groupStudentsByDept(students);
+        System.out.println("\nCount of students in each department:");
+        countStudentsInEachDept(students);
     }
 }
