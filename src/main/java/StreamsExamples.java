@@ -1,5 +1,6 @@
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -54,8 +55,11 @@ public class StreamsExamples {
         students.stream()
                 .collect(Collectors.groupingBy(Student::getDepartment))
                 .forEach((dept, studentList) -> {
-                    System.out.println("Department: "+dept);
-                    studentList.forEach(s -> System.out.println(s.getName()));
+                    System.out.print(dept+": ");
+                    studentList.forEach(s -> {
+                        System.out.print(s.getName() + " ");
+                        System.out.println();
+                    });
                 });
     }
 
@@ -63,8 +67,42 @@ public class StreamsExamples {
         students.stream()
                 .collect(Collectors.groupingBy(Student::getDepartment, Collectors.counting()))
                 .forEach((dept, count) -> {
-                    System.out.println("Department: "+dept+", Count: "+count);
+                    System.out.println(dept+" - "+count);
                 });
+    }
+
+    public static void getDeptWiseAvgMarks(List<Student> students) {
+        students.stream()
+                .collect(Collectors.groupingBy(Student::getDepartment))
+                .forEach((dept, studentList) -> {
+                    System.out.println(dept+" - "+studentList.stream().collect(Collectors.averagingInt(Student::getMarks)));
+                });
+    }
+
+    public static void getStudentsScoredLessThan(List<Student> students, int limit) {
+        students.stream()
+                .filter(s -> s.getMarks()<limit)
+                .forEach(s -> System.out.println(s.getName()));
+    }
+
+    public static void getStudentsOlderThan(List<Student> students, int age){
+        students.stream()
+                .filter(s -> s.getAge()>age)
+                .sorted(Comparator.comparing(Student::getName))
+                .map(s->s.getName())
+                .forEach(s->System.out.println(s));
+    }
+
+    public static void getTopTwoStudents(List<Student> students) {
+        students.stream()
+                .sorted(Comparator.comparingInt(Student::getMarks).reversed())
+                .limit(2)
+                .forEach(s->System.out.println(s.getName()+ " - "+s.getMarks()));
+    }
+
+    public static Map<Integer, String> getStudentsInMap(List<Student> students) {
+        return students.stream()
+                .collect(Collectors.toMap(Student::getId, Student::getName));
     }
 
     public static void main(String[] args) {
@@ -79,6 +117,8 @@ public class StreamsExamples {
         );
         int scoredMoreThanLimit = 80;
         String dept = "CSE";
+        int scoredLessThanLimit = 60;
+        int ageLimit = 21;
         System.out.println("Student Names:");
         getNames(students);
         System.out.println("\nStudents who scored more than "+scoredMoreThanLimit+":");
@@ -98,5 +138,15 @@ public class StreamsExamples {
         groupStudentsByDept(students);
         System.out.println("\nCount of students in each department:");
         countStudentsInEachDept(students);
+        System.out.println("\nDepartment wise average marks:");
+        getDeptWiseAvgMarks(students);
+        System.out.println("\nStudents who scored less than " + scoredLessThanLimit + " marks:");
+        getStudentsScoredLessThan(students, scoredLessThanLimit);
+        System.out.println("\nStudents older than "+ageLimit+" sorted by name:");
+        getStudentsOlderThan(students, ageLimit);
+        System.out.println("\nTop two scoring students:");
+        getTopTwoStudents(students);
+        System.out.println("\nDisplaying the collected students <List> in the form of Map<Integer, String>:");
+        getStudentsInMap(students).forEach((id, name)->System.out.println(id+"="+name));
     }
 }
